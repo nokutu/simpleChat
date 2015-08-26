@@ -1,46 +1,42 @@
 package chatserver;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class Users {
-	private static ConcurrentHashMap<UUID, InetAddress> ips = new ConcurrentHashMap<>();
-	private static ConcurrentHashMap<UUID, Integer> ports = new ConcurrentHashMap<>();
-	private static ConcurrentHashMap<UUID, String> usernames = new ConcurrentHashMap<>();
+
+	private static ArrayList<User> users = new ArrayList<>();
 
 	public static UUID add(InetAddress ip, int port, String username) {
 		UUID id = UUID.randomUUID();
-		if (usernames.containsValue(username))
+		if (isUsernameInUse(username))
 			return null;
-		ips.put(id, ip);
-		ports.put(id, port);
-		usernames.put(id, username);
+		users.add(new User(id, ip, port, username));
 		return id;
 	}
 
-	public static void message(String message, DatagramSocket serverSocket)
-			throws IOException {
-		StringBuilder output = new StringBuilder();
-		output.append("[START]");
-		output.append("[MESSAGE]");
-		output.append("[TIME]");
-		output.append(System.currentTimeMillis());
-		output.append("[/TIME]");
-		output.append("[TEXT]");
-		output.append(message);
-		output.append("[/TEXT]");
-		output.append("[/MESSAGE]");
-		output.append("[END]");
+	public static boolean isUsernameInUse(String username) {
+		for (User user : users)
+			if (username.equals(user.getUsername()))
+				return true;
+		return false;
+	}
 
-		for (UUID id : ips.keySet()) {
-			DatagramPacket sendPacket = new DatagramPacket(output.toString()
-					.getBytes(), output.toString().getBytes().length, ips.get(id),
-					ports.get(id));
-			serverSocket.send(sendPacket);
+	public static ArrayList<User> getUsers() {
+		return users;
+	}
+
+	public static void remove(User user) {
+		users.remove(user);
+	}
+
+	public static void remove(UUID id) {
+		for (User user : users) {
+			if (user.getId() == id) {
+				users.remove(user);
+				return;
+			}
 		}
 	}
 }

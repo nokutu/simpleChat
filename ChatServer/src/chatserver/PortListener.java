@@ -47,7 +47,7 @@ public class PortListener extends Thread {
 	private synchronized void readMessage() throws InterruptedException,
 			IOException {
 
-		message = Utils.substringWithDelete(message, "[START]", "[END]");
+		message = Utils.sub(message, "[START]", "[END]");
 
 		// Check package content.
 		if (message.indexOf("[LOGIN]") == 0)
@@ -59,7 +59,7 @@ public class PortListener extends Thread {
 	}
 
 	private synchronized void login() throws IOException {
-		message = Utils.substringWithDelete(message, "[LOGIN]", "[/LOGIN]");
+		message = Utils.sub(message, "[LOGIN]", "[/LOGIN]");
 		UUID id = Users.add(ip, port, message);
 
 		StringBuilder output = new StringBuilder();
@@ -79,7 +79,7 @@ public class PortListener extends Thread {
 	}
 
 	private synchronized void message() throws IOException {
-		message = Utils.substringWithDelete(message, "[MESSAGE]", "[/MESSAGE]");
-		Users.message(message, serverSocket);
+		message = Utils.sub(message, "[MESSAGE]", "[/MESSAGE]");
+		Main.message(message, serverSocket);
 	}
 }
