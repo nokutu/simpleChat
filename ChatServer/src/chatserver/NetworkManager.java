@@ -34,8 +34,6 @@ public class NetworkManager {
 		byte[] messageBytes = new byte[1022];
 		for (int i = 0; i < 1022; i++)
 			messageBytes[i] = content[i + 2];
-		System.out.println(new String(messageBytes).trim());
-		System.out.println(length);
 		String message = new String(messageBytes).trim().substring(0, length);
 		System.out.println("Server in: " + message);
 		return new Packet(message, packageNumber, receivePacket.getAddress(),

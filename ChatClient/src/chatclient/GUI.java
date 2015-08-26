@@ -54,16 +54,22 @@ public class GUI extends JPanel {
 		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 		this.add(scroll, BorderLayout.CENTER);
 
-		inputBox.getInputMap().put(
-				KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "send");
+		inputBox.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
+				"send");
 		inputBox.getActionMap().put("send", new SendAction());
 	}
 
 	public void refresh() {
 		chatBox.setText("");
+		String newlines = "";
+		for (int i = 0; i < (chatBox.getParent().getHeight() / 16) - messages.size(); i++) {
+			newlines += "\n";
+		}
 		for (String message : messages) {
 			chatBox.setText(message + "\n" + chatBox.getText());
 		}
+		chatBox.setText(newlines + chatBox.getText());
+		System.out.println(chatBox.getHeight());
 	}
 
 	private class SendAction extends AbstractAction {
@@ -74,7 +80,8 @@ public class GUI extends JPanel {
 		public void actionPerformed(ActionEvent arg0) {
 			if (!inputBox.getText().isEmpty())
 				try {
-					Actions.send(inputBox.getText(), Main.main.serverIP, Main.main.serverPort);
+					Actions.send(inputBox.getText(), Main.main.serverIP,
+							Main.main.serverPort);
 					inputBox.setText("");
 				} catch (IOException e) {
 					e.printStackTrace();
