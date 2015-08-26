@@ -2,18 +2,14 @@ package chatclient;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.InetAddress;
 import java.net.SocketException;
-import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
+
+import chatclient.NetworkManager.InvalidPackageException;
 
 public class PortListener extends Thread {
 
-	InetAddress ip;
-	int port;
-	String message;
-
-	public ArrayBlockingQueue<Main.LOGIN_RESULT> loginResults;
+	ArrayBlockingQueue<Main.LOGIN_RESULT> loginResults;
 
 	public PortListener() {
 		this.loginResults = new ArrayBlockingQueue<>(5);
@@ -24,15 +20,16 @@ public class PortListener extends Thread {
 		while (true) {
 			try {
 				byte[] receiveData = new byte[1024];
+				Packet packet = null;
 				while (true) {
 					DatagramPacket receivePacket = new DatagramPacket(receiveData,
 							receiveData.length);
-					Main.main.serverSocket.receive(receivePacket);
-					message = new String(receivePacket.getData()).trim();
-					System.out.println("Client: " + message);
-					ip = receivePacket.getAddress();
-					port = receivePacket.getPort();
-					readMessage();
+					try {
+					packet = NetworkManager.getPacket(receivePacket);
+					readMessage(packet);}
+					catch (InvalidPackageException e) {
+						Actions.askResend(e.getPackageNumber(), e.getIp(), e.getPort());
+					}
 				}
 			} catch (SocketException e) {
 				e.printStackTrace();
@@ -44,34 +41,18 @@ public class PortListener extends Thread {
 		}
 	}
 
-	private synchronized void readMessage() throws InterruptedException,
-			IOException {
+	private synchronized void readMessage(Packet packet) throws InterruptedException,
+			IOException, InvalidPackageException {
 
-		message = Utils.substringWithDelete(message, "[START]", "[END]");
-
+		String message = Utils.sub(packet.getMessage(), "[START]", "[END]");
 		// Check package content.
 		if (message.indexOf("[LOGIN_ANSWER]") == 0)
-			loginAnswer();
+			Actions.loginAnswer(message, loginResults);
 		else if (message.indexOf("[MESSAGE]") == 0)
-			message();
+			Actions.messageReceived(message);
+		else if (message.indexOf("[RESEND]") == 0)
+			Actions.resend(message);
 		else
 			throw new IllegalStateException("Invalid action");
-	}
-
-	public void loginAnswer() throws InterruptedException {
-		message = Utils.substringWithDelete(message, "[LOGIN_ANSWER]",
-				"[/LOGIN_ANSWER]");
-		if (message.equals("USED"))
-			loginResults.put(Main.LOGIN_RESULT.USERNAME_USED);
-		else {
-			Main.main.id = UUID.fromString(message);
-			loginResults.put(Main.LOGIN_RESULT.SUCCESSFUL);
-		}
-	}
-
-	public void message() {
-		message = Utils.substringWithDelete(message, "[MESSAGE]", "[/MESSAGE]");
-		Main.main.gui.messages.add(0, Utils.substringWithDelete(message, "[TEXT]", "[/TEXT]"));
-		Main.main.gui.refresh();
 	}
 }

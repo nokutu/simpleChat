@@ -6,14 +6,12 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -34,7 +32,7 @@ public class Main {
 		SUCCESSFUL, USERNAME_USED, INVALID_IP
 	}
 
-	private static PortListener portListener;
+	static PortListener portListener;
 
 	public UUID id;
 	public String username;
@@ -87,23 +85,6 @@ public class Main {
 				e.printStackTrace();
 			}
 		}
-	}
-
-	public void send(String message) throws IOException {
-		message = "[START][MESSAGE]" + this.username + ": " + message
-				+ "[/MESSAGE][END]";
-		DatagramPacket sendPacket = new DatagramPacket(message.getBytes(),
-				message.getBytes().length, serverIP, serverPort);
-		serverSocket.send(sendPacket);
-	}
-
-	public LOGIN_RESULT login() throws IOException, InterruptedException {
-		String message = "[START][LOGIN]" + this.username + "[/LOGIN][END]";
-		DatagramPacket sendPacket = new DatagramPacket(message.getBytes(),
-				message.getBytes().length, serverIP, serverPort);
-		serverSocket.send(sendPacket);
-
-		return portListener.loginResults.poll(5, TimeUnit.SECONDS);
 	}
 
 	private void showLoginDialog() throws UnknownHostException {
@@ -166,7 +147,7 @@ public class Main {
 				try {
 					serverIP = InetAddress.getByName(dialog.serverIp.getText());
 					username = dialog.username.getText();
-					LOGIN_RESULT result = login();
+					LOGIN_RESULT result = Actions.login(serverIP, serverPort);
 					if (result == LOGIN_RESULT.SUCCESSFUL)
 						pane.setValue(JOptionPane.OK_OPTION);
 					else if (result == LOGIN_RESULT.USERNAME_USED) {

@@ -74,7 +74,7 @@ public class GUI extends JPanel {
 		public void actionPerformed(ActionEvent arg0) {
 			if (!inputBox.getText().isEmpty())
 				try {
-					Main.main.send(inputBox.getText());
+					Actions.send(inputBox.getText(), Main.main.serverIP, Main.main.serverPort);
 					inputBox.setText("");
 				} catch (IOException e) {
 					e.printStackTrace();

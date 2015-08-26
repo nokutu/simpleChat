@@ -2,37 +2,27 @@ package chatserver;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.SocketException;
-import java.util.UUID;
+
+import chatserver.NetworkManager.InvalidPackageException;
 
 public class PortListener extends Thread {
 
-	DatagramSocket serverSocket = null;
-	InetAddress ip;
-	int port;
-	String message;
-
 	@Override
 	public void run() {
-		try {
-			serverSocket = new DatagramSocket(9885);
-		} catch (SocketException e1) {
-			e1.printStackTrace();
-		}
 		while (true) {
 			try {
 				byte[] receiveData = new byte[1024];
 				while (true) {
 					DatagramPacket receivePacket = new DatagramPacket(receiveData,
 							receiveData.length);
-					serverSocket.receive(receivePacket);
-					message = new String(receivePacket.getData()).trim();
-					System.out.println("Server: " + message);
-					ip = receivePacket.getAddress();
-					port = receivePacket.getPort();
-					readMessage();
+					Packet packet = null;
+					try {
+						packet = NetworkManager.getPacket(receivePacket);
+						readMessage(packet);
+					} catch (InvalidPackageException e) {
+						Actions.askResend(e.getPackageNumber(), e.getIp(), e.getPort());
+					}
 				}
 			} catch (SocketException e) {
 				e.printStackTrace();
@@ -44,42 +34,19 @@ public class PortListener extends Thread {
 		}
 	}
 
-	private synchronized void readMessage() throws InterruptedException,
-			IOException {
+	private synchronized void readMessage(Packet packet)
+			throws InterruptedException, IOException, InvalidPackageException {
 
-		message = Utils.sub(message, "[START]", "[END]");
+		String message = Utils.sub(packet.getMessage(), "[START]", "[END]");
 
 		// Check package content.
 		if (message.indexOf("[LOGIN]") == 0)
-			login();
+			Actions.loginRequested(message, packet.getIp(), packet.getPort());
 		else if (message.indexOf("[MESSAGE]") == 0)
-			message();
+			Actions.messageReceived(message);
+		else if (message.indexOf("[RESEND]") == 0)
+			Actions.resend(message);
 		else
-			throw new IllegalStateException("Invalid action");
-	}
-
-	private synchronized void login() throws IOException {
-		message = Utils.sub(message, "[LOGIN]", "[/LOGIN]");
-		UUID id = Users.add(ip, port, message);
-
-		StringBuilder output = new StringBuilder();
-		output.append("[START]");
-		output.append("[LOGIN_ANSWER]");
-		if (id != null)
-			output.append(id.toString());
-		else
-			output.append("USED");
-		output.append("[/LOGIN_ANSWER]");
-		output.append("[END]");
-
-		DatagramPacket sendPacket = new DatagramPacket(
-				output.toString().getBytes(), output.toString().getBytes().length, ip,
-				port);
-		serverSocket.send(sendPacket);
-	}
-
-	private synchronized void message() throws IOException {
-		message = Utils.sub(message, "[MESSAGE]", "[/MESSAGE]");
-		Main.message(message, serverSocket);
+			throw new InvalidPackageException(packet.getPosition(), packet.getIp(), packet.getPort());
 	}
 }
