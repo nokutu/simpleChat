@@ -4,8 +4,7 @@ subprojects {
     jar.destinationDir = file('../jars')
 }
 
-task copyFiles(type: Copy, dependsOn: subprojects.jar) {
-   from(subprojects.jar)
-   into project.file('dest')
+task run(type: Exec) {
+    commandLine 'sh', './run.sh'
 }
-
+run.dependsOn subprojects.jar
