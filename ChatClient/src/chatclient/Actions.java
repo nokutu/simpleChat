@@ -2,6 +2,7 @@ package chatclient;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -69,6 +70,15 @@ public class Actions {
 		output.append("[/IS_ALIVE]");
 		output.append("[END]");
 
+		Main.main.periodicConnectionCheck.lastCheck = System.currentTimeMillis();
 		NetworkManager.send(output.toString(), Main.main.serverIP, Main.main.serverPort);
+	}
+
+	public static void disconnect() throws UnknownHostException {
+		Main.main.serverIP = null;
+		Main.main.serverPort = 0;
+		Main.main.periodicConnectionCheck.lastCheck = 0L;
+		Main.main.gui.messages.clear();
+		Main.main.showLoginDialog();
 	}
 }

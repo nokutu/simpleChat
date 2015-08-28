@@ -16,7 +16,7 @@ public class PeriodicConnectionCheck extends Thread {
 	public void run() {
 		while (true) {
 			for (User user : Users.getUsers()) {
-				if (System.currentTimeMillis() - record.get(user.getId()) > 15000) {
+				if (System.currentTimeMillis() - record.get(user.getId()) > 5000L) {
 					Users.remove(user.getId());
 				}
 				try {
@@ -27,7 +27,7 @@ public class PeriodicConnectionCheck extends Thread {
 			}
 			synchronized (this) {
 				try {
-					this.wait(5000);
+					this.wait(1000);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}

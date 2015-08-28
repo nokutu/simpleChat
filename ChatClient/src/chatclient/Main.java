@@ -41,6 +41,7 @@ public class Main {
 	public DatagramSocket serverSocket;
 	public JFrame parent;
 	public GUI gui;
+	public PeriodicConnectionCheck periodicConnectionCheck;
 	public static Main main;
 
 	public static void main(String[] args) {
@@ -67,6 +68,8 @@ public class Main {
 		}
 		portListener = new PortListener();
 		portListener.start();
+		periodicConnectionCheck = new PeriodicConnectionCheck();
+		periodicConnectionCheck.start();
 		parent = new JFrame("Chat");
 		parent.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		parent.setMinimumSize(new Dimension(300, 400));
@@ -87,7 +90,7 @@ public class Main {
 		}
 	}
 
-	private void showLoginDialog() throws UnknownHostException {
+	public void showLoginDialog() throws UnknownHostException {
 		JOptionPane pane = new JOptionPane();
 		LoginDialog dialog = new LoginDialog();
 		pane.setMessage(dialog);
