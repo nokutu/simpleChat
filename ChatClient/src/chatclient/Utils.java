@@ -9,7 +9,9 @@ public class Utils {
 	}
 
 	public static boolean validIP (String ip) {
-    try {
+    if (ip.equals("localhost"))
+    	return true;
+		try {
         if ( ip == null || ip.isEmpty() ) {
             return false;
         }
