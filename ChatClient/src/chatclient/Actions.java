@@ -60,4 +60,15 @@ public class Actions {
 
 		return Main.portListener.loginResults.poll(5, TimeUnit.SECONDS);
 	}
+
+	public static void receiveCheck() throws IOException {
+		StringBuilder output = new StringBuilder();
+		output.append("[START]");
+		output.append("[IS_ALIVE]");
+		output.append(Main.main.id);
+		output.append("[/IS_ALIVE]");
+		output.append("[END]");
+
+		NetworkManager.send(output.toString(), Main.main.serverIP, Main.main.serverPort);
+	}
 }

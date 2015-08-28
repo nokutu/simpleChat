@@ -52,6 +52,8 @@ public class PortListener extends Thread {
 			Actions.messageReceived(message);
 		else if (message.indexOf("[RESEND]") == 0)
 			Actions.resend(message);
+		else if (message.indexOf("[IS_ALIVE]") == 0)
+			Actions.receiveCheck();
 		else
 			throw new IllegalStateException("Invalid action");
 	}

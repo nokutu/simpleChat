@@ -46,7 +46,10 @@ public class PortListener extends Thread {
 			Actions.messageReceived(message);
 		else if (message.indexOf("[RESEND]") == 0)
 			Actions.resend(message);
+		else if (message.indexOf("[IS_ALIVE]") == 0)
+			Actions.receiveCheck(Utils.sub(message, "[IS_ALIVE]", "[/IS_ALIVE]"));
 		else
-			throw new InvalidPackageException(packet.getPosition(), packet.getIp(), packet.getPort());
+			throw new InvalidPackageException(packet.getPosition(), packet.getIp(),
+					packet.getPort());
 	}
 }

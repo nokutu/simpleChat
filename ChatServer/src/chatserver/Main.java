@@ -6,6 +6,7 @@ import java.net.SocketException;
 public class Main {
 
 	private static PortListener t;
+	public static PeriodicConnectionCheck periodicConnectionCheck;
 	public static DatagramSocket serverSocket = null;
 
 	public static void main(String[] args) {
@@ -28,6 +29,8 @@ public class Main {
 	private void run() throws InterruptedException {
 		t = new PortListener();
 		t.start();
+		periodicConnectionCheck = new PeriodicConnectionCheck();
+		periodicConnectionCheck.start();
 		while (t.isAlive())
 			Thread.sleep(100);
 	}

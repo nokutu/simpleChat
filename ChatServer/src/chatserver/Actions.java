@@ -41,6 +41,8 @@ public class Actions {
 		output.append("[/LOGIN_ANSWER]");
 		output.append("[END]");
 
+		if (id != null)
+			Main.periodicConnectionCheck.received(id);
 		NetworkManager.send(output.toString(), ip, port);
 	}
 
@@ -58,5 +60,18 @@ public class Actions {
 		output.append("[END]");
 
 		NetworkManager.send(output.toString(), ip, port);
+	}
+
+	public static void sendCheck(InetAddress ip, int port) throws IOException {
+		StringBuilder output = new StringBuilder();
+		output.append("[START]");
+		output.append("[IS_ALIVE]");
+		output.append("[/IS_ALIVE]");
+		output.append("[END]");
+		NetworkManager.send(output.toString(), ip, port);
+	}
+
+	public static void receiveCheck(String id) {
+		Main.periodicConnectionCheck.received(UUID.fromString(id));
 	}
 }
