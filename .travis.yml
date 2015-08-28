@@ -2,7 +2,30 @@ language: java
 cache:
   directories: $HOME/.gradle
 jdk:
-  - oraclejdk8
-  - oraclejdk7
-  - openjdk7
-script: ./gradlew build
+- oraclejdk8
+- oraclejdk7
+- openjdk7
+script: ./gradlew build docs
+# Release the plugin via GitHub releases when pushing a tag
+deploy:
+  provider: releases
+  api_key: "${GH_TOKEN}"
+  file: "jars/*"
+  skip_cleanup: true
+  on:
+    tags: true
+after_success: |-
+  if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_JDK_VERSION" == "oraclejdk8" ]; then
+    git config --global user.email "deploy@travis"
+    git config --global user.name "Travis CI" 
+    git clone --quiet --branch=gh-pages https://${GH_TOKEN}@github.com/nokutu/simpleChat gh-pages
+    rm -rf gh-pages/* 
+    cp -r docs/* gh-pages 
+    cd gh-pages 
+    git add . 
+    git commit -m "Update Javadoc"
+    git push origin gh-pages
+  fi
+env:
+  global:
+    secure: Qj6iGRMICmrAAgEDu8459pfpKBFWbglr39iHMaxXuXwXIB22J0DsgECnyLXv4z8AbVj7wctV3ujBXl1BZ3adzItPc4N9UZMyDHUfd/vprcwdmbT9oh5D16iFJgu73TJH1vkPJSe/gPj5PwMEwrVaAyO167F7IwMf7coQ0SYeKmnxHXLQasUbK0NJmaQhXOLLwStwxSNvv4R5L6VCSwlz9fUarSwGPacOkS3cA4rSKOi7t66r33SBcfjmR8Ml/qfe0a4iwwHFwDDIens2urI8hGg66CSUje9SFjumoBwlU2Y+5J8QqjOPdPom/aslFzSnceBiDdrlXdQk34t936T4keFGzDSL1ToRtQaUihc/BNneE1nUNovkXk3U4ylV8pAM/tzPjw4Smoo9Txy7FDkHSqdCEX2loPM3ER2fncupnyvvCuXZvID0VFSg/msQJG01QcVRnZyCnsYxrFhQuRiY0TphczlP4NVs1UOK9IRaqYf92CTM75yP8U5LoY6xglvbxC3ukSNAREP6tb8eRCExgimQ6xRgYyvyA+prS2SKjk6sEfL+MQaKF5DaQirOyj8OIDj00cZ9Z9udKGJzmyTVZ3HqeZvqlhdpHkZbbIIzUWQJRCM/wn3H4OhhATCOR40I2R7Se6E1F6ftm5+u5nSZuIZq2BGs/lIwpt+GkGAEqo0=
